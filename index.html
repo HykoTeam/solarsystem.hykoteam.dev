@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en"> <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n-key="app_title">High Precision Solar System Simulation</title>
+    <link rel="icon" href="favicon.png" type="image/png">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <p id="loading-text" data-i18n-key="loading_text">Loading Assets...</p>
+    </div>
+
+    <div id="top-bar-container">
+        <div id="header">
+            <h1 id="viewTitle" data-i18n-key="view_solar_system">Solar System Overview</h1>
+        </div>
+        
+        <div id="language-switcher-container">
+            <button id="language-toggle" data-i18n-key="lang_label">Language: English</button> 
+
+            <div id="language-dropdown" class="dropdown-content">
+                <a href="#" data-lang="zh-CN">简体中文</a>
+                <a href="#" data-lang="zh-TW">繁體中文</a>
+                <a href="#" data-lang="en">English</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="sidebar-info">
+        </div>
+
+    <div id="bottom-bar-container">
+        <button id="resetButton" data-i18n-key="reset_button">🔄 Reset View</button> 
+        
+        <div id="controls">
+            <div class="control-group">
+                <label for="speedSlider" data-i18n-key="speed_label">🚀 Speed:</label>
+                <input type="range" id="speedSlider" class="slider" min="0" max="200" value="100">
+                <span id="speedValue">1.00x</span>
+            </div>
+            
+            <div class="control-group">
+                <label for="zoomSlider" data-i18n-key="zoom_label">🔍 Zoom:</label>
+                <input type="range" id="zoomSlider" class="slider" min="50" max="200" value="100">
+                <span id="zoomValue">1.00x</span>
+            </div>
+        </div>
+        
+        <button id="backButton" style="display: none;" data-i18n-key="back_button">⬅️ Back to Overview</button>
+    </div>
+
+    <div id="footer-copyright">
+        <span>© 2025 Hyko Team. All rights reserved.   |   </span>
+        <a href="https://github.com/HykoTeam/solarsystem.hykoteam.dev target="_blank">GitHub</a>
+    </div>
+    
+    <div id="tooltip"></div>
+
+    <canvas id="solarCanvas"></canvas>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

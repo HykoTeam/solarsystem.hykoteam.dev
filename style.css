@@ -1,0 +1,407 @@
+/* style.css */
+
+/* 字体基础设置 */
+body {
+    margin: 0;
+    /* 移除 overflow: hidden; 以便在JS中更好地管理星星 */
+    background-color: #080b10;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100vw; /* 确保 body 占满整个视口 */
+    color: #d1eaff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Canvas：占据整个视口，以适配任意比例 */
+canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    transition: opacity 0.3s;
+}
+
+/* 工具提示框 */
+#tooltip {
+    position: fixed; 
+    padding: 10px;
+    background: rgba(40, 44, 52, 0.95);
+    border: 1px solid #00c8ff;
+    border-radius: 5px;
+    color: #e6f7ff;
+    font-size: 0.9em;
+    pointer-events: none; /* 允许点击穿透 */
+    opacity: 0;
+    transition: opacity 0.2s;
+    transform: translate(15px, 15px); /* 稍微偏移鼠标 */
+    z-index: 50; 
+    max-width: 250px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+#tooltip p {
+    margin: 3px 0;
+    line-height: 1.4;
+}
+#tooltip strong {
+    color: #00c8ff;
+    font-size: 1.1em;
+    display: block;
+    margin-bottom: 5px;
+}
+
+/* 顶部容器：用于布局标题和语言切换 */
+#top-bar-container {
+    position: absolute;
+    top: 20px;
+    left: 0; 
+    right: 0; /* 让容器宽度占满，以便标题居中 */
+    display: flex;
+    justify-content: center; 
+    align-items: center;
+    z-index: 35;
+    pointer-events: none; /* 默认允许点击穿透 */
+}
+
+/* 标题栏样式：保持居中 */
+#header {
+    pointer-events: auto; /* 仅标题部分可点击 */
+    padding: 8px 15px;
+    background: rgba(10, 20, 30, 0.8);
+    border: 2px solid #00c8ff; 
+    box-shadow: 0 0 15px rgba(0, 200, 255, 0.5); 
+    border-radius: 5px;
+    text-align: center;
+    min-width: 300px;
+    transition: opacity 0.3s;
+    /* 确保标题在弹性布局中居中 */
+    margin-right: auto;
+    margin-left: auto;
+}
+#header h1 {
+    margin: 0;
+    font-size: 1.4em;
+    color: #ffffff;
+    letter-spacing: 2px;
+    text-shadow: 0 0 5px #00c8ff;
+    font-family: 'Consolas', 'Courier New', monospace; 
+}
+
+/* 语言切换容器：移至最右上角，设置高优先级 */
+#language-switcher-container {
+    pointer-events: auto; /* 允许点击 */
+    position: absolute; 
+    right: 20px; /* 相对于视口右侧的绝对定位 */
+    top: 0; /* 配合 #top-bar-container 的 top: 20px */
+    z-index: 90; 
+    display: block; 
+}
+
+#language-toggle {
+    padding: 10px 18px; 
+    background: rgba(40, 44, 52, 0.95); 
+    border: 2px solid #00c8ff;
+    border-radius: 10px; 
+    box-shadow: 0 0 10px rgba(0, 200, 255, 0.3);
+    color: #e6f7ff; 
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    font-family: 'Consolas', monospace;
+    transition: all 0.2s ease;
+    min-width: 150px; 
+    text-align: center;
+}
+
+#language-toggle:hover {
+    background: rgba(0, 150, 255, 0.2);
+    box-shadow: 0 0 12px rgba(0, 200, 255, 0.7);
+}
+
+/* 自定义下拉菜单内容 Box */
+#language-dropdown {
+    display: none; 
+    position: absolute;
+    top: 100%; 
+    right: 0;
+    width: 100%; /* 宽度与按钮一致 */
+    margin-top: 5px; 
+    
+    /* 统一的科技风 Box 风格 */
+    background-color: rgba(10, 20, 30, 0.95); 
+    border: 1px solid #00c8ff;
+    border-radius: 8px;
+    overflow: hidden; 
+    box-shadow: 0 4px 15px rgba(0, 200, 255, 0.5);
+    min-width: 150px;
+}
+
+/* 下拉菜单中的链接/选项样式 */
+#language-dropdown a {
+    color: #d1eaff;
+    padding: 10px 18px;
+    text-decoration: none;
+    display: block;
+    font-size: 0.95em;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+/* 悬停时的样式 (Box 内部内容) */
+#language-dropdown a:hover {
+    background-color: rgba(0, 200, 255, 0.2); 
+    color: #ffffff;
+}
+
+/* 选中的当前语言样式 */
+#language-dropdown a.active {
+    background-color: #00c8ff;
+    color: #080b10; 
+    font-weight: bold;
+}
+
+/* 控制面板及返回按钮容器 (底部居中) */
+#bottom-bar-container {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%); /* 确保水平居中 */
+    display: flex;
+    gap: 30px; 
+    align-items: center;
+    z-index: 10;
+}
+
+/* 返回按钮 */
+#backButton {
+    /* 样式与重置按钮保持一致，但默认隐藏 */
+    display: none; 
+    padding: 10px 20px;
+    background: rgba(0, 150, 255, 0.1);
+    border: 2px solid #00c8ff;
+    border-radius: 10px;
+    color: #ffffff;
+    font-size: 1.0em;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(0, 200, 255, 0.5);
+    transition: all 0.3s ease;
+}
+#backButton:hover {
+    background: rgba(0, 150, 255, 0.3);
+    box-shadow: 0 0 15px rgba(0, 200, 255, 0.8);
+}
+
+/* 重置按钮 */
+#resetButton {
+    padding: 10px 20px;
+    background: rgba(255, 69, 0, 0.1); 
+    border: 2px solid #FF4500;
+    border-radius: 10px;
+    color: #ffffff;
+    font-size: 1.0em;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(255, 69, 0, 0.5);
+    transition: all 0.3s ease;
+}
+
+#resetButton:hover {
+    background: rgba(255, 69, 0, 0.3);
+    box-shadow: 0 0 15px rgba(255, 69, 0, 0.8);
+}
+
+
+#controls {
+    padding: 12px 25px;
+    background: rgba(40, 44, 52, 0.95); 
+    border-radius: 10px;
+    display: flex;
+    gap: 30px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+}
+
+.control-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.control-group label {
+    font-weight: bold;
+    color: #00c8ff;
+    min-width: 60px;
+}
+
+.slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 150px;
+    height: 8px;
+    background: #555;
+    outline: none;
+    opacity: 0.8;
+    transition: opacity .2s;
+    border-radius: 4px;
+}
+
+.slider:hover {
+    opacity: 1;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #00c8ff;
+    cursor: pointer;
+    box-shadow: 0 0 5px rgba(0, 200, 255, 0.8);
+}
+
+.slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #00c8ff;
+    cursor: pointer;
+    box-shadow: 0 0 5px rgba(0, 200, 255, 0.8);
+}
+
+#speedValue, #zoomValue {
+    width: 40px;
+    text-align: right;
+    color: #fff;
+    font-family: 'Consolas', monospace;
+}
+
+/* 侧边信息面板样式 */
+#sidebar-info {
+    position: absolute;
+    top: 50%;
+    right: 20px; 
+    transform: translateY(-50%); /* 确保垂直居中 */
+    width: 300px; 
+    max-height: 80vh;
+    padding: 20px;
+    background: rgba(10, 20, 30, 0.9); 
+    border: 2px solid #00c8ff; 
+    box-shadow: 0 0 15px rgba(0, 200, 255, 0.5);
+    border-radius: 8px;
+    z-index: 40; 
+    opacity: 0; 
+    pointer-events: none; /* 默认不可交互 */
+    transition: opacity 0.5s ease;
+    overflow-y: auto; 
+}
+
+#sidebar-info.visible {
+    opacity: 1;
+    pointer-events: auto; /* 详情模式下可交互 */
+}
+
+/* 隐藏侧边栏滚动条 */
+#sidebar-info::-webkit-scrollbar {
+    display: none;
+}
+
+#sidebar-info h2 {
+    color: #ffffff;
+    font-size: 1.8em;
+    text-align: center;
+    margin-bottom: 15px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid rgba(0, 200, 255, 0.5);
+    font-family: 'Consolas', monospace;
+}
+
+.info-section {
+    margin-bottom: 15px;
+    padding: 10px;
+    border-left: 3px solid #00c8ff;
+    background: rgba(0, 200, 255, 0.05);
+    color: #d1eaff;
+}
+
+.info-section strong {
+    display: block;
+    color: #00c8ff;
+    margin-bottom: 5px;
+    font-size: 1.1em;
+}
+
+.info-section p {
+    margin: 5px 0;
+    font-size: 0.9em;
+}
+
+
+/* ------------------------------------ */
+/* 加载动画样式 */
+/* ------------------------------------ */
+#loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #080b10;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    opacity: 1; /* 初始时可见，在JS中控制隐藏 */
+    transition: opacity 0.3s; 
+}
+
+.spinner {
+    border: 8px solid rgba(255, 255, 255, 0.2);
+    border-top: 8px solid #00c8ff; 
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+}
+
+#loading-text {
+    color: #00c8ff;
+    font-size: 1.5em;
+    text-shadow: 0 0 5px #00c8ff;
+    font-family: 'Consolas', monospace;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ------------------------------------ */
+/* 底部版权声明 */
+/* ------------------------------------ */
+#footer-copyright {
+    position: absolute;
+    bottom: 1px; /* 紧贴底部 */
+    left: 50%;
+    transform: translateX(-50%); /* 水平居中 */
+    z-index: 10;
+    color: rgba(255, 255, 255, 0.4); /* 半透明的灰色，保持低调 */
+    font-size: 0.75em;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    white-space: nowrap; /* 防止在小屏上折行 */
+}
+
+#footer-copyright a {
+    color: #00c8ff; /* 链接颜色 */
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+#footer-copyright a:hover {
+    color: #fff; /* 鼠标悬停时高亮 */
+    text-decoration: underline;
+}
