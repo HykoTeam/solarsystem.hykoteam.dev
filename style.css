@@ -1,26 +1,27 @@
-/* style.css */
+/* style.css - 优化和响应式适配 */
 
 /* 字体基础设置 */
 body {
     margin: 0;
-    /* 移除 overflow: hidden; 以便在JS中更好地管理星星 */
     background-color: #080b10;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-    width: 100vw; /* 确保 body 占满整个视口 */
+    width: 100vw;
     color: #d1eaff;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    /* 解决小屏下的拖动问题 */
+    overflow: hidden; 
 }
 
-/* Canvas：占据整个视口，以适配任意比例 */
+/* Canvas：默认占据整个视口 */
 canvas {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%;
+    height: 100%; /* 桌面端/默认状态 */
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
     transition: opacity 0.3s;
 }
@@ -34,10 +35,10 @@ canvas {
     border-radius: 5px;
     color: #e6f7ff;
     font-size: 0.9em;
-    pointer-events: none; /* 允许点击穿透 */
+    pointer-events: none;
     opacity: 0;
     transition: opacity 0.2s;
-    transform: translate(15px, 15px); /* 稍微偏移鼠标 */
+    transform: translate(15px, 15px);
     z-index: 50; 
     max-width: 250px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
@@ -59,17 +60,18 @@ canvas {
     position: absolute;
     top: 20px;
     left: 0; 
-    right: 0; /* 让容器宽度占满，以便标题居中 */
+    right: 0;
     display: flex;
-    justify-content: center; 
-    align-items: center;
+    justify-content: center; /* 确保标题居中 */
+    align-items: flex-start; /* 保持顶部对齐 */
     z-index: 35;
-    pointer-events: none; /* 默认允许点击穿透 */
+    pointer-events: none;
+    padding: 0 20px; /* 增加左右内边距 */
 }
 
 /* 标题栏样式：保持居中 */
 #header {
-    pointer-events: auto; /* 仅标题部分可点击 */
+    pointer-events: auto;
     padding: 8px 15px;
     background: rgba(10, 20, 30, 0.8);
     border: 2px solid #00c8ff; 
@@ -78,9 +80,7 @@ canvas {
     text-align: center;
     min-width: 300px;
     transition: opacity 0.3s;
-    /* 确保标题在弹性布局中居中 */
-    margin-right: auto;
-    margin-left: auto;
+    /* 在弹性布局中占据中心位置，不需要额外的 margin 调整 */
 }
 #header h1 {
     margin: 0;
@@ -91,12 +91,12 @@ canvas {
     font-family: 'Consolas', 'Courier New', monospace; 
 }
 
-/* 语言切换容器：移至最右上角，设置高优先级 */
+/* 语言切换容器：移至最右上角，使用绝对定位 */
 #language-switcher-container {
-    pointer-events: auto; /* 允许点击 */
+    pointer-events: auto;
     position: absolute; 
-    right: 20px; /* 相对于视口右侧的绝对定位 */
-    top: 0; /* 配合 #top-bar-container 的 top: 20px */
+    right: 20px; 
+    top: 0; 
     z-index: 90; 
     display: block; 
 }
@@ -128,10 +128,8 @@ canvas {
     position: absolute;
     top: 100%; 
     right: 0;
-    width: 100%; /* 宽度与按钮一致 */
+    width: 100%; 
     margin-top: 5px; 
-    
-    /* 统一的科技风 Box 风格 */
     background-color: rgba(10, 20, 30, 0.95); 
     border: 1px solid #00c8ff;
     border-radius: 8px;
@@ -151,7 +149,7 @@ canvas {
     transition: background-color 0.2s, color 0.2s;
 }
 
-/* 悬停时的样式 (Box 内部内容) */
+/* 悬停时的样式 */
 #language-dropdown a:hover {
     background-color: rgba(0, 200, 255, 0.2); 
     color: #ffffff;
@@ -169,43 +167,40 @@ canvas {
     position: absolute;
     bottom: 20px;
     left: 50%;
-    transform: translateX(-50%); /* 确保水平居中 */
+    transform: translateX(-50%);
     display: flex;
     gap: 30px; 
     align-items: center;
     z-index: 10;
+    pointer-events: auto; /* 确保可以点击 */
 }
 
-/* 返回按钮 */
-#backButton {
-    /* 样式与重置按钮保持一致，但默认隐藏 */
-    display: none; 
+/* 重置按钮和返回按钮基础样式合并 */
+#resetButton, #backButton {
     padding: 10px 20px;
-    background: rgba(0, 150, 255, 0.1);
-    border: 2px solid #00c8ff;
     border-radius: 10px;
     color: #ffffff;
     font-size: 1.0em;
     cursor: pointer;
-    box-shadow: 0 0 10px rgba(0, 200, 255, 0.5);
     transition: all 0.3s ease;
+    font-weight: bold;
+}
+
+#backButton {
+    display: none; 
+    background: rgba(0, 150, 255, 0.1);
+    border: 2px solid #00c8ff;
+    box-shadow: 0 0 10px rgba(0, 200, 255, 0.5);
 }
 #backButton:hover {
     background: rgba(0, 150, 255, 0.3);
     box-shadow: 0 0 15px rgba(0, 200, 255, 0.8);
 }
 
-/* 重置按钮 */
 #resetButton {
-    padding: 10px 20px;
     background: rgba(255, 69, 0, 0.1); 
     border: 2px solid #FF4500;
-    border-radius: 10px;
-    color: #ffffff;
-    font-size: 1.0em;
-    cursor: pointer;
     box-shadow: 0 0 10px rgba(255, 69, 0, 0.5);
-    transition: all 0.3s ease;
 }
 
 #resetButton:hover {
@@ -278,12 +273,12 @@ canvas {
     font-family: 'Consolas', monospace;
 }
 
-/* 侧边信息面板样式 */
+/* 侧边信息面板样式：基础（桌面端） */
 #sidebar-info {
     position: absolute;
     top: 50%;
     right: 20px; 
-    transform: translateY(-50%); /* 确保垂直居中 */
+    transform: translateY(-50%);
     width: 300px; 
     max-height: 80vh;
     padding: 20px;
@@ -293,14 +288,14 @@ canvas {
     border-radius: 8px;
     z-index: 40; 
     opacity: 0; 
-    pointer-events: none; /* 默认不可交互 */
+    pointer-events: none;
     transition: opacity 0.5s ease;
     overflow-y: auto; 
 }
 
 #sidebar-info.visible {
     opacity: 1;
-    pointer-events: auto; /* 详情模式下可交互 */
+    pointer-events: auto;
 }
 
 /* 隐藏侧边栏滚动条 */
@@ -354,7 +349,7 @@ canvas {
     justify-content: center;
     align-items: center;
     z-index: 100;
-    opacity: 1; /* 初始时可见，在JS中控制隐藏 */
+    opacity: 1;
     transition: opacity 0.3s; 
 }
 
@@ -385,23 +380,150 @@ canvas {
 /* ------------------------------------ */
 #footer-copyright {
     position: absolute;
-    bottom: 1px; /* 紧贴底部 */
+    bottom: 1px;
     left: 50%;
-    transform: translateX(-50%); /* 水平居中 */
+    transform: translateX(-50%);
     z-index: 10;
-    color: rgba(255, 255, 255, 0.4); /* 半透明的灰色，保持低调 */
+    color: rgba(255, 255, 255, 0.4);
     font-size: 0.75em;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    white-space: nowrap; /* 防止在小屏上折行 */
+    white-space: nowrap;
 }
 
 #footer-copyright a {
-    color: #00c8ff; /* 链接颜色 */
+    color: #00c8ff;
     text-decoration: none;
     transition: color 0.3s;
 }
 
 #footer-copyright a:hover {
-    color: #fff; /* 鼠标悬停时高亮 */
+    color: #fff;
     text-decoration: underline;
+}
+
+/* ------------------------------------ */
+/* 媒体查询：小屏幕/移动设备适配 (max-width: 768px) */
+/* ------------------------------------ */
+@media (max-width: 768px) {
+    
+    /* 调整主体字体大小 */
+    body {
+        font-size: 14px;
+    }
+    
+    /* --- 关键：Canvas 尺寸调整 --- */
+    /* Canvas 高度为视口高度减去信息面板固定高度 250px */
+    canvas {
+        height: calc(100vh - 250px); 
+    }
+
+    /* 顶部容器和标题 */
+    #top-bar-container {
+        top: 10px;
+        padding: 0 10px;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+    #header {
+        min-width: 80%;
+    }
+
+    #header h1 {
+        font-size: 1.2em;
+    }
+
+    /* 语言切换移动到顶部，使其不与标题重叠 */
+    #language-switcher-container {
+        position: static; 
+        right: auto;
+        top: auto;
+    }
+
+    #language-toggle {
+        padding: 8px 15px;
+        font-size: 0.9em;
+        min-width: 120px;
+    }
+
+    /* 底部容器：解决按钮挤压问题 */
+    #bottom-bar-container {
+        bottom: 250px; /* 移动到信息面板上方 (250px) */
+        left: 50%;
+        transform: translateX(-50%);
+        gap: 15px;
+        width: 95%; 
+        flex-wrap: wrap; /* 允许换行，解决挤压 */
+        justify-content: center;
+        z-index: 60;
+    }
+    
+    /* 控制面板：纵向堆叠控制项 */
+    #controls {
+        padding: 10px 15px;
+        gap: 10px; 
+        flex-direction: column; 
+        width: 100%; 
+        max-width: 300px;
+        margin: 0 auto; 
+    }
+
+    .control-group {
+        justify-content: space-between;
+    }
+    
+    .slider {
+        width: 100px;
+    }
+    
+    #resetButton, #backButton {
+        padding: 8px 15px;
+        font-size: 0.9em;
+    }
+
+    /* --- 关键：信息面板固定在底部，可滚动 --- */
+    #sidebar-info {
+        width: 100%; /* 占据整个宽度 */
+        height: 250px; /* 固定高度 */
+        max-height: 250px;
+        top: auto;
+        bottom: 0; /* 底部对齐 */
+        right: auto;
+        left: 0; /* 左对齐 */
+        transform: none; /* 移除 transform 动画 */
+        padding: 15px;
+        font-size: 0.9em;
+        border-radius: 0; /* 移除圆角 */
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+        border-width: 2px 0 0 0; /* 仅顶部边框 */
+        opacity: 0; /* 默认隐藏 */
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+        z-index: 50; 
+        overflow-y: scroll; /* 允许内容超出时滚动 */
+    }
+    
+    /* 展开状态 */
+    #sidebar-info.visible {
+        opacity: 1; 
+        pointer-events: auto;
+    }
+    
+    /* 移除切换按钮样式 */
+    #sidebar-toggle {
+        display: none !important;
+    }
+    
+    /* 工具提示框字体和最大宽度调整 */
+    #tooltip {
+        font-size: 0.8em;
+        max-width: 180px;
+    }
+    
+    /* 底部版权声明的位置调整 */
+    #footer-copyright {
+        bottom: 225px; /* 位于信息面板上方 */
+    }
 }

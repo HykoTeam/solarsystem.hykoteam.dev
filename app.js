@@ -33,35 +33,51 @@ const zoomSlider = document.getElementById('zoomSlider');
 const INITIAL_SPEED = 100;
 const INITIAL_ZOOM = 100;
 
+// **新增：移动端固定参数**
+const IS_MOBILE_MAX_WIDTH = 768;
+const MOBILE_SIDEBAR_HEIGHT = 250; // 与 CSS 中 #sidebar-info 的 height 保持一致
+const MOBILE_ZOOM_FACTOR = 0.5; // 进一步缩小缩放，以容纳所有轨道
+
 let globalSpeedFactor = parseFloat(speedSlider.value) / 100;
 let globalZoomFactor = parseFloat(zoomSlider.value) / 100; 
 let isPausedByHover = false; 
 let activePlanet = null; 
 
-let width = canvas.width = window.innerWidth;
-let height = canvas.height = window.innerHeight;
+/**
+ * 计算 Canvas 在当前视口下的高度。
+ * 在移动端，高度需要排除底部的信息面板区域。
+ */
+function calculateCanvasHeight() {
+    if (window.innerWidth <= IS_MOBILE_MAX_WIDTH) {
+        // 移动端：视口高度减去信息面板固定高度
+        return window.innerHeight - MOBILE_SIDEBAR_HEIGHT;
+    }
+    // 桌面端：完整的视口高度
+    return window.innerHeight;
+}
 
-const planetImages = new Map();
-let assetsLoaded = false;
+let width = canvas.width = window.innerWidth;
+let height = canvas.height = calculateCanvasHeight(); // 使用新函数计算高度
+
+let assetsLoaded = true; 
 
 // --- 星星数据 --- 
 const stars = [];
+const STAR_COUNT = 300;
+const MAX_STAR_POS = 1000; 
 
 /**
- * 根据当前的视口尺寸重新生成星星数据。
+ * 根据固定的虚拟区域重新生成星星数据。
  * 在初始化和窗口大小改变时调用，以确保星星背景适配。
- * @param {number} count 星星数量
  */
-function generateStars(count = 300) {
+function generateStars() {
     stars.length = 0; // 清空现有星星
-    const currentWidth = window.innerWidth;
-    const currentHeight = window.innerHeight;
-
-    for (let i = 0; i < count; i++) {
+    
+    for (let i = 0; i < STAR_COUNT; i++) {
         stars.push({
-            // 使用当前视口范围生成星星位置
-            baseX: Math.random() * currentWidth,
-            baseY: Math.random() * currentHeight,
+            // 使用固定的虚拟区域生成星星位置
+            baseX: Math.random() * width, 
+            baseY: Math.random() * height,
             size: Math.random() * 1.5,
             opacity: Math.random(),
             twinkleOffset: Math.random() * 0.005 + 0.001 
@@ -83,11 +99,11 @@ generateStars(); // 初始化时生成星星
 function toggleLoadingScreen(show, callback = () => {}) {
     if (show) {
         loadingOverlay.style.display = 'flex';
-        // 等待下一帧以确保 display 属性生效
         requestAnimationFrame(() => {
             loadingOverlay.style.opacity = 1;
         });
     } else {
+        // 延迟隐藏，使加载动画的过渡效果可见
         loadingOverlay.style.opacity = 0;
         setTimeout(() => {
             loadingOverlay.style.display = 'none';
@@ -157,7 +173,10 @@ function setLanguage(lang, triggerLoad = true) {
         
         // 4. 隐藏加载屏幕
         if (triggerLoad) {
-            toggleLoadingScreen(false);
+            toggleLoadingScreen(false, animate); // 语言切换完成后启动/继续动画
+        } else if (assetsLoaded && !triggerLoad) {
+            // 首次加载（无动画）时，如果资源已就绪，直接启动动画
+            toggleLoadingScreen(false, animate);
         }
         
     }, updateDelay);
@@ -165,39 +184,8 @@ function setLanguage(lang, triggerLoad = true) {
 
 
 // -------------------------------------------------------------------
-// III. 资源加载函数
+// IV. 渲染函数 
 // -------------------------------------------------------------------
-
-function loadAssets() {
-    const bodiesWithImage = allCelestialBodies.filter(body => body.imageSrc);
-    
-    const promises = bodiesWithImage.map(body => {
-        return new Promise((resolve) => {
-            const img = new Image();
-            img.onload = () => {
-                planetImages.set(body.name, img);
-                resolve(); 
-            };
-            img.onerror = () => {
-                console.error(`资源加载失败: ${body.name} - ${body.imageSrc}`);
-                resolve(); 
-            };
-            img.src = body.imageSrc;
-        });
-    });
-
-    Promise.all(promises).then(() => {
-        assetsLoaded = true;
-        
-        setTimeout(() => {
-            toggleLoadingScreen(false, animate); 
-        }, 300); 
-    });
-}
-
-// -------------------------------------------------------------------
-// IV. 渲染函数 (包含 i18n 引用)
-// ... (getTooltipHTML, updateSidebarContent, drawCelestialBody 函数保持不变) ...
 
 function getTooltipHTML(body, isDetailMode) {
     const T = translations[currentLanguage];
@@ -212,7 +200,7 @@ function getTooltipHTML(body, isDetailMode) {
         <p>${T['prop_official_name']}: ${body.officialName || 'N/A'}</p>
         <p>${T['prop_type']}: ${body.type || '未知'}</p>
         <p>${T['prop_temp']}: ${body.temp || '未知'}</p>
-        <p>${T['prop_mass']}: ${body.mass || '未知'}</p>
+        <p>⚖️ ${T['prop_mass']}: ${body.mass || '未知'}</p>
         <p>📏 ${T[orbitLabelKey]}: ${orbitValue} ${T[orbitUnitKey]}</p>
         ${body.fact ? `<p>${T['fact_label']}: ${body.fact}</p>` : ''}
         ${!isDetailMode && body.canZoom ? `<p style="color:#00c8ff;">${T['click_to_zoom']}</p>` : ''}
@@ -220,8 +208,11 @@ function getTooltipHTML(body, isDetailMode) {
 }
 
 function updateSidebarContent(planet) {
+    
     if (!planet) {
-        sidebarInfo.innerHTML = '';
+        // 非详情模式，清空内容，并确保面板隐藏
+        sidebarInfo.innerHTML = ''; 
+        sidebarInfo.classList.remove('visible');
         return;
     }
 
@@ -264,7 +255,11 @@ function updateSidebarContent(planet) {
     `;
 
     sidebarInfo.innerHTML = html;
+    
+    // 详情模式下，信息面板始终可见
+    sidebarInfo.classList.add('visible');
 }
+
 
 function drawCelestialBody(body, x, y, radius, isSun = false, opacity = 1) {
     ctx.save(); 
@@ -276,26 +271,18 @@ function drawCelestialBody(body, x, y, radius, isSun = false, opacity = 1) {
         ctx.shadowColor = (body.name === 'Sun' ? "#FFD700" : (body.color || "#FFFFFF"));
     }
     
-    const image = planetImages.get(body.name);
-    
-    if (image && assetsLoaded) {
-        ctx.save(); 
-        ctx.beginPath();
-        ctx.arc(x, y, radius, 0, Math.PI * 2, true);
-        ctx.clip(); 
-        ctx.drawImage(image, x - radius, y - radius, radius * 2, radius * 2);
-        ctx.restore(); 
-        
+    // 直接绘制圆形
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.fillStyle = body.color;
+    ctx.fill();
+
+    // 绘制白色边框 (可选，用于区分，但太阳不画)
+    if (!isSun) {
         ctx.beginPath();
         ctx.arc(x, y, radius, 0, Math.PI * 2);
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
         ctx.stroke();
-
-    } else {
-        ctx.beginPath();
-        ctx.arc(x, y, radius, 0, Math.PI * 2);
-        ctx.fillStyle = body.color;
-        ctx.fill();
     }
     
     ctx.restore(); 
@@ -316,6 +303,7 @@ function drawSolarSystem(opacity = 1) {
         const actualDistance = planet.baseDistance * globalZoomFactor;
         const actualRadius = planet.radius * globalZoomFactor;
 
+        // 绘制轨道
         ctx.globalAlpha = opacity * 0.5;
         ctx.beginPath();
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
@@ -334,6 +322,7 @@ function drawSolarSystem(opacity = 1) {
 
         drawCelestialBody(planet, x, y, actualRadius, false, opacity);
 
+        // 土星环
         if (planet.name.includes('土星')) {
             ctx.globalAlpha = opacity * 0.5;
             ctx.beginPath();
@@ -373,6 +362,8 @@ function drawPlanetDetail(planet, opacity = 1) {
     if (opacity === 1 && transitionDirection === 0) {
          viewTitle.textContent = planet.name + ' ' + T['view_planet_detail'];
          updateSidebarContent(planet); 
+         // 详情视图下，信息面板始终可见
+         sidebarInfo.classList.add('visible');
     }
 
     backButton.style.display = 'block'; 
@@ -383,6 +374,7 @@ function drawPlanetDetail(planet, opacity = 1) {
     const detailZoomFactor = globalZoomFactor * 5; 
     const mainRadius = planet.radius * detailZoomFactor; 
     
+    // 主星体 (使用 isSun = true 激活发光效果)
     drawCelestialBody(planet, centerX, centerY, mainRadius, true, opacity);
 
     const moonSpeedMultiplier = (isPausedByHover ? 0 : globalSpeedFactor) * DETAIL_SPEED_SCALE;
@@ -392,6 +384,7 @@ function drawPlanetDetail(planet, opacity = 1) {
             const actualDistance = moon.baseDistance * detailZoomFactor;
             const actualRadius = moon.radius * detailZoomFactor;
 
+            // 绘制卫星轨道
             ctx.globalAlpha = opacity * 0.5;
             ctx.beginPath();
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
@@ -412,6 +405,7 @@ function drawPlanetDetail(planet, opacity = 1) {
             drawCelestialBody(moon, x, y, actualRadius, false, opacity);
         });
     } else {
+        // 无卫星提示文本
         ctx.globalAlpha = opacity;
         ctx.fillStyle = '#00c8ff';
         ctx.font = '24px "Consolas", monospace';
@@ -436,25 +430,23 @@ function drawPlanetDetail(planet, opacity = 1) {
 // -------------------------------------------------------------------
 
 function animate() {
-    if (!assetsLoaded) {
-        requestAnimationFrame(animate); 
-        return; 
+    // 确保 Canvas 尺寸在动画循环中保持最新
+    if (width !== window.innerWidth || height !== calculateCanvasHeight()) {
+         width = canvas.width = window.innerWidth;
+         height = canvas.height = calculateCanvasHeight();
+         generateStars();
     }
 
     ctx.fillStyle = '#080b10';
     ctx.fillRect(0, 0, width, height);
 
-    const centerX = width / 2;
-    const centerY = height / 2;
     const currentTime = Date.now();
     
     // 绘制背景星星
     stars.forEach(star => {
-        // 星星位置不再依赖于 centerX/Y，它们基于视口坐标
         const twinkle = Math.sin(currentTime * star.twinkleOffset) * 0.5 + 0.5; 
         const finalOpacity = star.opacity * twinkle;
 
-        // 星星的位置直接使用 base 坐标，不进行缩放或位移
         const x = star.baseX;
         const y = star.baseY;
         const size = star.size;
@@ -487,15 +479,15 @@ function animate() {
                 transitionDirection = 0; 
                 activePlanet = transitionTarget;
                 transitionTarget = null;
-                sidebarInfo.classList.add('visible'); 
+                sidebarInfo.classList.add('visible'); // 详情模式始终可见
                 viewTitle.textContent = activePlanet.name + ' ' + translations[currentLanguage]['view_planet_detail'];
             }
         } else if (transitionDirection === -1) { 
             const opacityDetail = 1 - easedProgress;
             const opacitySolar = easedProgress;
-
-            sidebarInfo.classList.remove('visible'); 
             
+            sidebarInfo.classList.remove('visible'); // 退出过渡期间隐藏侧边栏
+
             if (opacityDetail > 0.05) drawPlanetDetail(transitionTarget, opacityDetail);
             if (opacitySolar > 0.05) drawSolarSystem(opacitySolar);
 
@@ -513,9 +505,12 @@ function animate() {
     if (!isTransitioning) {
         if (activePlanet === null) {
             drawSolarSystem();
+            // 总览模式下，隐藏信息面板
             sidebarInfo.classList.remove('visible'); 
         } else {
             drawPlanetDetail(activePlanet);
+            // 详情模式下，显示信息面板
+            sidebarInfo.classList.add('visible');
         }
     }
 
@@ -526,15 +521,46 @@ function animate() {
 // VI. 事件处理与初始化
 // -------------------------------------------------------------------
 
+/**
+ * 根据当前屏幕宽度更新初始缩放系数 (仅影响重置时的缩放)
+ */
+function updateInitialZoomFactor() {
+    if (window.innerWidth <= IS_MOBILE_MAX_WIDTH) {
+        // 手机版：使用更小的缩放系数
+        globalZoomFactor = MOBILE_ZOOM_FACTOR;
+        zoomSlider.value = MOBILE_ZOOM_FACTOR * 100; // 更新滑块值
+    } else {
+        // 桌面版：使用默认缩放系数
+        globalZoomFactor = INITIAL_ZOOM / 100;
+        zoomSlider.value = INITIAL_ZOOM; // 更新滑块值
+    }
+    document.getElementById('zoomValue').textContent = `${globalZoomFactor.toFixed(2)}x`;
+}
+
+
 // --- 交互事件 ---
 canvas.addEventListener('mousemove', handleInteraction);
 canvas.addEventListener('click', handleInteraction);
 document.getElementById('backButton').addEventListener('click', handleBack);
 
 window.addEventListener('resize', () => {
+    // 重新计算并设置 Canvas 尺寸
     width = canvas.width = window.innerWidth;
-    height = canvas.height = window.innerHeight;
-    generateStars(); // 视口变化时重新生成星星
+    height = canvas.height = calculateCanvasHeight();
+    
+    generateStars(); 
+    
+    // 窗口大小变化时重新判断缩放系数
+    updateInitialZoomFactor();
+
+    // 窗口大小变化时重新判断信息面板的状态
+    if (activePlanet || window.innerWidth > IS_MOBILE_MAX_WIDTH) {
+        // 详情模式或桌面模式下，面板可见
+        sidebarInfo.classList.add('visible');
+    } else {
+        // 移动端总览模式下，面板隐藏
+        sidebarInfo.classList.remove('visible');
+    }
 });
 
 // --- 控制器事件 (速度和缩放) ---
@@ -555,19 +581,17 @@ function resetViewState() {
     toggleLoadingScreen(true); // 显示加载动画
 
     setTimeout(() => {
-        // 1. 重置缩放和速度变量
+        // 1. 重置速度
         globalSpeedFactor = INITIAL_SPEED / 100;
-        globalZoomFactor = INITIAL_ZOOM / 100;
-        
-        // 2. 更新滑动条的DOM显示
         speedSlider.value = INITIAL_SPEED;
-        zoomSlider.value = INITIAL_ZOOM;
+        
+        // 2. 重新计算并应用初始缩放（根据当前设备）
+        updateInitialZoomFactor();
+        
         document.getElementById('speedValue').textContent = `${globalSpeedFactor.toFixed(2)}x`;
-        document.getElementById('zoomValue').textContent = `${globalZoomFactor.toFixed(2)}x`;
 
         // 3. 退出细节视图 (如果处于细节视图)
         if (activePlanet !== null) {
-            // 使用 handleBack 会触发过渡动画，这里直接重置状态
             activePlanet = null;
             transitionDirection = 0;
             backButton.style.display = 'none'; 
@@ -575,10 +599,7 @@ function resetViewState() {
             viewTitle.textContent = translations[currentLanguage]['view_solar_system'];
         }
         
-        // 4. 重置星星的位置（可选，但有助于响应式）
-        generateStars(); 
-        
-        // 5. 隐藏加载动画
+        // 4. 隐藏加载动画
         toggleLoadingScreen(false);
     }, 500); // 预留 500ms 观看加载动画
 }
@@ -622,6 +643,9 @@ function handleBack() {
         transitionDirection = -1; 
         transitionStartTime = Date.now();
         tooltip.style.opacity = 0;
+        
+        // 退出细节视图时，隐藏信息面板
+        sidebarInfo.classList.remove('visible');
     }
 }
 
@@ -684,8 +708,7 @@ function handleInteraction(event) {
     }
 }
 
-// 首次加载时：设置默认语言并启动资源加载
-const initialLangElement = langDropdown.querySelector(`a[data-lang="${currentLanguage}"]`);
-langToggle.textContent = `${translations[currentLanguage]['lang_label']}: ${initialLangElement.textContent}`; 
-setLanguage(currentLanguage, false); // 初始化时，不显示加载屏
-loadAssets();
+// 首次加载时：
+updateInitialZoomFactor(); // 首次加载时设置初始缩放系数
+// 设置默认语言并启动动画
+setLanguage(currentLanguage, false);

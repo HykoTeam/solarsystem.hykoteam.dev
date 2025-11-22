@@ -10,9 +10,9 @@ const translations = {
         loading_text: '资源加载中...',
         view_solar_system: '太阳系总览模式',
         view_planet_detail: '卫星系统视图',
-        speed_label: '🚀 速度:',
-        zoom_label: '🔍 缩放:',
-        back_button: '⬅️ 返回太阳系总览',
+        speed_label: '☄ 速度:',
+        zoom_label: '☌ 缩放:',
+        back_button: '⏎ 返回太阳系总览',
         reset_button: '重置视图',
         lang_label: '语言',
         // 侧边栏/悬浮框通用文本
@@ -43,9 +43,9 @@ const translations = {
         loading_text: '資源加載中...',
         view_solar_system: '太陽系總覽模式',
         view_planet_detail: '衛星系統視圖',
-        speed_label: '🚀 速度:',
-        zoom_label: '🔍 縮放:',
-        back_button: '⬅️ 返回太陽系總覽',
+        speed_label: '☄ 速度:',
+        zoom_label: '☌ 縮放:',
+        back_button: '⏎ 返回太陽系總覽',
         reset_button: '重置視圖',
         lang_label: '語言',
         // 側邊欄/懸浮框通用文本
@@ -76,9 +76,9 @@ const translations = {
         loading_text: 'Loading Assets...',
         view_solar_system: 'Solar System Overview',
         view_planet_detail: 'Satellite System View',
-        speed_label: '🚀 Speed:',
-        zoom_label: '🔍 Zoom:',
-        back_button: '⬅️ Back to Overview',
+        speed_label: '☄ Speed:',
+        zoom_label: '☌ Zoom:',
+        back_button: '⏎ Back to Overview',
         reset_button: 'Reset View',
         lang_label: 'Language',
         // Sidebar/Tooltip Text
@@ -109,24 +109,24 @@ const translations = {
 let currentLanguage = 'en'; // <-- 默认语言设置为英文
 
 // -------------------------------------------------------------------
-// II. 星体数据定义 (数据为占位符，可自行替换为更准确的值)
+// II. 星体数据定义 (数据为占位符，可自行替换为更准确的值) - **已移除 imageSrc**
 // -------------------------------------------------------------------
 
 const moonsData = [
-    { name: '月球', officialName: 'Moon', radius: 3, baseDistance: 25, speed: 0.1, color: '#C0C0C0', angle: 0, imageSrc: 'https://cdn.jsdelivr.net/gh/dev-lu/solar-system-assets/moon.png', type: '卫星', canZoom: false },
-    { name: '木卫一 (Io)', officialName: 'Io', radius: 5, baseDistance: 35, speed: 0.08, color: '#FFD700', angle: 1, imageSrc: 'https://cdn.jsdelivr.net/gh/dev-lu/solar-system-assets/io.png', type: '卫星', canZoom: false },
-    { name: '木卫二 (Europa)', officialName: 'Europa', radius: 4, baseDistance: 50, speed: 0.05, color: '#ADD8E6', angle: 2, imageSrc: 'https://cdn.jsdelivr.net/gh/dev-lu/solar-system-assets/europa.png', type: '卫星', canZoom: false },
-    { name: '土卫六 (Titan)', officialName: 'Titan', radius: 6, baseDistance: 45, speed: 0.07, color: '#FFA07A', angle: 3, imageSrc: 'https://cdn.jsdelivr.net/gh/dev-lu/solar-system-assets/titan.png', type: '卫星', canZoom: false },
+    { name: '月球', officialName: 'Moon', radius: 3, baseDistance: 25, speed: 0.1, color: '#C0C0C0', angle: 0, type: '卫星', canZoom: false },
+    { name: '木卫一 (Io)', officialName: 'Io', radius: 5, baseDistance: 35, speed: 0.08, color: '#FFD700', angle: 1, type: '卫星', canZoom: false },
+    { name: '木卫二 (Europa)', officialName: 'Europa', radius: 4, baseDistance: 50, speed: 0.05, color: '#ADD8E6', angle: 2, type: '卫星', canZoom: false },
+    { name: '土卫六 (Titan)', officialName: 'Titan', radius: 6, baseDistance: 45, speed: 0.07, color: '#FFA07A', angle: 3, type: '卫星', canZoom: false },
 ];
 
 const planets = [
-    { name: '水星 (Mercury)', officialName: 'Mercury', radius: 4,  baseDistance: 60,  speed: 0.04,  color: '#A9A9A9', angle: 0.1, mass: '3.3 x 10²³ kg', type: '岩石行星', temp: '430°C', imageSrc: 'https://cdn.jsdelivr.net/gh/dev-lu/solar-system-assets/mercury.png', moons: [], canZoom: true, diameter: '4,880 km', gravity: '3.7 m/s²', dayLength: '58.6 地球日' },
-    { name: '金星 (Venus)', officialName: 'Venus', radius: 8,  baseDistance: 90,  speed: 0.015, color: '#DEB887', angle: 1.1, mass: '4.8 x 10²⁴ kg', type: '岩石行星', temp: '462°C', imageSrc: 'https://cdn.jsdelivr.net/gh/dev-lu/solar-system-assets/venus.png', moons: [], canZoom: true, diameter: '12,104 km', gravity: '8.87 m/s²', dayLength: '243 地球日' },
-    { name: '地球 (Earth)', officialName: 'Earth', radius: 9,  baseDistance: 130, speed: 0.01,  color: '#4169E1', angle: 2.1, mass: '5.9 x 10²⁴ kg', type: '岩石行星', temp: '15°C', fact: '拥有生命和液态水', imageSrc: 'https://cdn.jsdelivr.net/gh/dev-lu/solar-system-assets/earth.png', moons: [moonsData[0]], canZoom: true, diameter: '12,742 km', gravity: '9.8 m/s²', dayLength: '24 小时' },
-    { name: '火星 (Mars)', officialName: 'Mars', radius: 6,  baseDistance: 170, speed: 0.008, color: '#CD5C5C', angle: 3.1, mass: '6.4 x 10²³ kg', type: '岩石行星', temp: '-63°C', fact: '红色星球，有极地冰盖', imageSrc: 'https://cdn.jsdelivr.net/gh/dev-lu/solar-system-assets/mars.png', moons: [], canZoom: true, diameter: '6,779 km', gravity: '3.7 m/s²', dayLength: '24.6 小时' },
-    { name: '木星 (Jupiter)', officialName: 'Jupiter', radius: 18, baseDistance: 240, speed: 0.002, color: '#D2B48C', angle: 4.1, mass: '1.8 x 10²⁷ kg', type: '气体巨星', temp: '-145°C', fact: '太阳系最大，有大红斑', imageSrc: 'https://cdn.jsdelivr.net/gh/dev-lu/solar-system-assets/jupiter.png', moons: [moonsData[1], moonsData[2]], canZoom: true, diameter: '142,984 km', gravity: '24.79 m/s²', dayLength: '9.9 小时' },
-    { name: '土星 (Saturn)', officialName: 'Saturn', radius: 15, baseDistance: 300, speed: 0.0015,color: '#F4A460', angle: 5.1, mass: '5.6 x 10²⁶ kg', type: '气体巨星', temp: '-178°C', fact: '拥有复杂的行星环系统', imageSrc: 'https://cdn.jsdelivr.net/gh/dev-lu/solar-system-assets/saturn.png', moons: [moonsData[3]], canZoom: true, diameter: '120,536 km', gravity: '10.44 m/s²', dayLength: '10.7 小时' },
-    { name: '海王星 (Neptune)', officialName: 'Neptune', radius: 12, baseDistance: 380, speed: 0.001, color: '#1E90FF', angle: 6.1, mass: '1.0 x 10²⁶ kg', type: '冰巨星', temp: '-201°C', imageSrc: 'https://cdn.jsdelivr.net/gh/dev-lu/solar-system-assets/neptune.png', moons: [], canZoom: true, diameter: '49,244 km', gravity: '11.15 m/s²', dayLength: '16.1 小时' },
+    { name: '水星 (Mercury)', officialName: 'Mercury', radius: 4,  baseDistance: 60,  speed: 0.04,  color: '#A9A9A9', angle: 0.1, mass: '3.3 x 10²³ kg', type: '岩石行星', temp: '430°C', moons: [], canZoom: true, diameter: '4,880 km', gravity: '3.7 m/s²', dayLength: '58.6 地球日' },
+    { name: '金星 (Venus)', officialName: 'Venus', radius: 8,  baseDistance: 90,  speed: 0.015, color: '#DEB887', angle: 1.1, mass: '4.8 x 10²⁴ kg', type: '岩石行星', temp: '462°C', moons: [], canZoom: true, diameter: '12,104 km', gravity: '8.87 m/s²', dayLength: '243 地球日' },
+    { name: '地球 (Earth)', officialName: 'Earth', radius: 9,  baseDistance: 130, speed: 0.01,  color: '#4169E1', angle: 2.1, mass: '5.9 x 10²⁴ kg', type: '岩石行星', temp: '15°C', fact: '拥有生命和液态水', moons: [moonsData[0]], canZoom: true, diameter: '12,742 km', gravity: '9.8 m/s²', dayLength: '24 小时' },
+    { name: '火星 (Mars)', officialName: 'Mars', radius: 6,  baseDistance: 170, speed: 0.008, color: '#CD5C5C', angle: 3.1, mass: '6.4 x 10²³ kg', type: '岩石行星', temp: '-63°C', fact: '红色星球，有极地冰盖', moons: [], canZoom: true, diameter: '6,779 km', gravity: '3.7 m/s²', dayLength: '24.6 小时' },
+    { name: '木星 (Jupiter)', officialName: 'Jupiter', radius: 18, baseDistance: 240, speed: 0.002, color: '#D2B48C', angle: 4.1, mass: '1.8 x 10²⁷ kg', type: '气体巨星', temp: '-145°C', fact: '太阳系最大，有大红斑', moons: [moonsData[1], moonsData[2]], canZoom: true, diameter: '142,984 km', gravity: '24.79 m/s²', dayLength: '9.9 小时' },
+    { name: '土星 (Saturn)', officialName: 'Saturn', radius: 15, baseDistance: 300, speed: 0.0015,color: '#F4A460', angle: 5.1, mass: '5.6 x 10²⁶ kg', type: '气体巨星', temp: '-178°C', fact: '拥有复杂的行星环系统', moons: [moonsData[3]], canZoom: true, diameter: '120,536 km', gravity: '10.44 m/s²', dayLength: '10.7 小时' },
+    { name: '海王星 (Neptune)', officialName: 'Neptune', radius: 12, baseDistance: 380, speed: 0.001, color: '#1E90FF', angle: 6.1, mass: '1.0 x 10²⁶ kg', type: '冰巨星', temp: '-201°C', moons: [], canZoom: true, diameter: '49,244 km', gravity: '11.15 m/s²', dayLength: '16.1 小时' },
 ];
 
 // 太阳系外围星体
@@ -136,6 +136,7 @@ const outerBodies = [
     { name: '赛德娜 (Sedna)', officialName: 'Sedna', radius: 4, baseDistance: 700, color: '#CD853F', type: 'TNO', mass: '未知', angle: 5.5, currentX: 0, currentY: 0, canZoom: false, diameter: '约 995 km' }
 ];
 
-const sun = { name: 'Sun', officialName: 'Sol', radius: 25, color: '#FFD700', glow: 50, imageSrc: 'https://cdn.jsdelivr.net/gh/dev-lu/solar-system-assets/sun.png' };
+// **已移除 imageSrc**
+const sun = { name: 'Sun', officialName: 'Sol', radius: 25, color: '#FFD700', glow: 50 };
 
 const allCelestialBodies = [sun, ...planets, ...moonsData];
